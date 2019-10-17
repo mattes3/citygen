@@ -1,0 +1,11 @@
+
+export enum ActionTypes {
+    MAP_GENERATE = 'MAP_GENERATE',
+    MAP_FACTOR_TARGET_ZOOM = 'MAP_FACTOR_TARGET_ZOOM'
+}
+
+export enum PayloadSources {
+    SERVER_ACTION = 'SERVER_ACTION',
+    VIEW_ACTION = 'VIEW_ACTION',
+    LOGIC_ACTION = 'LOGIC_ACTION'
+}
