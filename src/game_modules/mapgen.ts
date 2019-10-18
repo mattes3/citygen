@@ -112,12 +112,12 @@ export class Segment {
             setStart(val) {
                 this.start = val;
                 obj.collider.updateCollisionProperties({ start: this.start });
-                return obj.roadRevision++;
+                obj.roadRevision++;
             },
             setEnd(val) {
                 this.end = val;
                 obj.collider.updateCollisionProperties({ end: this.end });
-                return obj.roadRevision++;
+                obj.roadRevision++;
             }
         };
 
@@ -158,10 +158,10 @@ export class Segment {
         return this.cachedLength;
     }
 
-    debugLinks() {
+    debugLinks(): void {
         this.q.color = 0x00FF00;
         each(this.links.b, backwards => backwards.q.color = 0xFF0000);
-        return each(this.links.f, forwards => forwards.q.color = 0x0000FF);
+        each(this.links.f, forwards => forwards.q.color = 0x0000FF);
     }
 
     startIsBackwards() {
@@ -222,7 +222,7 @@ export class Segment {
         }
     }
 
-    split(point: Vector2, segment: Segment, segmentList: Segment[], qTree: Quadtree<Limit<Segment>>) {
+    split(point: Vector2, segment: Segment, segmentList: Segment[], qTree: Quadtree<Limit<Segment>>): void {
         let firstSplit, fixLinks: Segment[], secondSplit;
         const startIsBackwards = this.startIsBackwards();
 
@@ -250,10 +250,10 @@ export class Segment {
         each(fixLinks, (link: Segment) => {
             let index = link.links.b.indexOf(this);
             if (index !== -1) {
-                return link.links.b[index] = splitPart;
+                link.links.b[index] = splitPart;
             } else {
                 index = link.links.f.indexOf(this);
-                return link.links.f[index] = splitPart;
+                link.links.f[index] = splitPart;
             }
         });
 
@@ -266,7 +266,7 @@ export class Segment {
         secondSplit.links.b.push(firstSplit);
 
         segment.links.f.push(firstSplit);
-        return segment.links.f.push(secondSplit);
+        segment.links.f.push(secondSplit);
     }
 
     static segmentFactory = {
@@ -317,31 +317,29 @@ export class Segment {
                     if ((action.q.t == null) || (intersection.t < action.q.t)) {
                         action.q.t = intersection.t;
 
-                        (function (other, intersection) {
-                            action.priority = 4;
-                            return action.func = function () {
-                                // if intersecting lines are too similar don't continue
-                                if (minDegreeDifference(other.dir()!, segment.dir()!) < config.mapGeneration.MINIMUM_INTERSECTION_DEVIATION) {
-                                    return false;
+                        action.priority = 4;
+                        action.func = function () {
+                            // if intersecting lines are too similar don't continue
+                            if (minDegreeDifference(other.dir()!, segment.dir()!) < config.mapGeneration.MINIMUM_INTERSECTION_DEVIATION) {
+                                return false;
+                            }
+
+                            other.split(intersection, segment, segments, qTree);
+                            segment.r.end = intersection;
+                            segment.q.severed = true;
+
+                            if (debugData != null) {
+                                if (!debugData.intersections) {
+                                    debugData.intersections = [];
                                 }
+                                debugData.intersections.push({
+                                    x: intersection.x,
+                                    y: intersection.y
+                                });
+                            }
 
-                                other.split(intersection, segment, segments, qTree);
-                                segment.r.end = intersection;
-                                segment.q.severed = true;
-
-                                if (debugData != null) {
-                                    if (!debugData.intersections) {
-                                        debugData.intersections = [];
-                                    }
-                                    debugData.intersections.push({
-                                        x: intersection.x,
-                                        y: intersection.y
-                                    });
-                                }
-
-                                return true;
-                            };
-                        })(other, intersection);
+                            return true;
+                        };
                     }
                 }
             }
@@ -352,46 +350,44 @@ export class Segment {
                 // other segment's start must have a corresponding end.
                 if (length(segment.r.end, other.r.end) <= config.mapGeneration.ROAD_SNAP_DISTANCE) {
 
-                    (function (other) {
-                        const point = other.r.end;
-                        action.priority = 3;
-                        return action.func = function () {
-                            segment.r.end = point;
-                            segment.q.severed = true;
+                    const point = other.r.end;
+                    action.priority = 3;
+                    action.func = function () {
+                        segment.r.end = point;
+                        segment.q.severed = true;
 
-                            // update links of otherSegment corresponding to other.r.end
-                            const links = other.startIsBackwards() ? other.links.f : other.links.b;
-                            // check for duplicate lines, don't add if it exists
-                            // this should be done before links are setup, to avoid having to undo that step
-                            if (some(links, link => (equalV(link.r.start, segment.r.end) && equalV(link.r.end, segment.r.start)) ||
-                                (equalV(link.r.start, segment.r.start) && equalV(link.r.end, segment.r.end)))) {
-                                return false;
+                        // update links of otherSegment corresponding to other.r.end
+                        const links = other.startIsBackwards() ? other.links.f : other.links.b;
+                        // check for duplicate lines, don't add if it exists
+                        // this should be done before links are setup, to avoid having to undo that step
+                        if (some(links, link => (equalV(link.r.start, segment.r.end) && equalV(link.r.end, segment.r.start)) ||
+                            (equalV(link.r.start, segment.r.start) && equalV(link.r.end, segment.r.end)))) {
+                            return false;
+                        }
+
+                        each(links, function (link) {
+                            // pick links of remaining segments at junction corresponding to other.r.end
+                            link.linksForEndContaining(other)!.push(segment);
+
+                            // add junction segments to snapped segment
+                            segment.links.f.push(link);
+                        });
+
+                        links.push(segment);
+                        segment.links.f.push(other);
+
+                        if (debugData != null) {
+                            if (!debugData.snaps) {
+                                debugData.snaps = [];
                             }
-
-                            each(links, function (link) {
-                                // pick links of remaining segments at junction corresponding to other.r.end
-                                link.linksForEndContaining(other)!.push(segment);
-
-                                // add junction segments to snapped segment
-                                return segment.links.f.push(link);
+                            debugData.snaps.push({
+                                x: point.x,
+                                y: point.y
                             });
+                        }
 
-                            links.push(segment);
-                            segment.links.f.push(other);
-
-                            if (debugData != null) {
-                                if (!debugData.snaps) {
-                                    debugData.snaps = [];
-                                }
-                                debugData.snaps.push({
-                                    x: point.x,
-                                    y: point.y
-                                });
-                            }
-
-                            return true;
-                        };
-                    })(other);
+                        return true;
+                    };
                 }
             }
 
@@ -404,7 +400,7 @@ export class Segment {
 
                     const point = pointOnLine;
                     action.priority = 2;
-                    return action.func = function () {
+                    action.func = function () {
                         segment.r.end = point;
                         segment.q.severed = true;
 
@@ -491,15 +487,16 @@ export class Segment {
             }
 
             for (let i = 0, end = newBranches.length - 1; i <= end; i++) {
-                ((branch => branch.setupBranchLinks = function () {
+                const branch = newBranches[i];
+                branch.setupBranchLinks = function () {
                     // setup links between each current branch and each existing branch stemming from the previous segment
                     each(previousSegment.links.f, link => {
                         branch.links.b.push(link);
                         link.linksForEndContaining(previousSegment)!.push(branch);
                     });
                     previousSegment.links.f.push(branch);
-                    return branch.links.b.push(previousSegment);
-                }))(newBranches[i]);
+                    branch.links.b.push(previousSegment);
+                }
             }
 
             return newBranches;
@@ -541,7 +538,7 @@ export class Segment {
             each(priorityQ, function (segment, i) {
                 if (segment.t < minT) {
                     minT = segment.t;
-                    return minT_i = i;
+                    minT_i = i;
                 }
             });
 
