@@ -6823,11 +6823,6 @@ onetime@^2.0.0:
   dependencies:
     mimic-fn "^1.0.0"
 
-open-simplex-noise@^1.6.0:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/open-simplex-noise/-/open-simplex-noise-1.6.0.tgz#5c658f64cb6922ba869a9ce75937b0910bc5f4a2"
-  integrity sha512-/oLrC7PdpDDr3c5yM13qaAA5/BdFSRVk/iXnBkGKCahOPeDUVY/wIQQgdPGdUqMneMwL557J3hxcjLuo9hHDWw==
-
 open@^6.3.0:
   version "6.4.0"
   resolved "https://registry.yarnpkg.com/open/-/open-6.4.0.tgz#5c13e96d0dc894686164f18965ecfe889ecfc8a9"
@@ -8892,6 +8887,11 @@ simple-swizzle@^0.2.2:
   integrity sha1-pNprY1/8zMoz9w0Xy5JZLeleVXo=
   dependencies:
     is-arrayish "^0.3.1"
+
+simplex-noise@^2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/simplex-noise/-/simplex-noise-2.4.0.tgz#81b3458fb22dccc3bc8dd9a977c73797f86f523a"
+  integrity sha512-OjyDWm/QZjVbMrPxDVi9b2as+SeNn9EBXlrWVRlFW+TSyWMSXouDryXkQN0vf5YP+QZKobrmkvx1eQYPLtuqfw==
 
 sisteransi@^1.0.3:
   version "1.0.3"

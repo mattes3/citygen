@@ -20,11 +20,10 @@ import {
 } from '../generic_modules/math';
 import { defaultFor, minDegreeDifference } from '../generic_modules/utility';
 import config from './config';
-import seedrandom from 'seedrandom';
-import OpenSimplexNoise from 'open-simplex-noise';
+import SimplexNoise from 'simplex-noise';
 
 var random: () => number = Math.random;
-var noise: OpenSimplexNoise;
+var noise: SimplexNoise;
 
 const heatmap = {
     popOnRoad(r: Road) {
@@ -516,9 +515,7 @@ export class Segment {
     static generate(seed: number) {
         const debugData: DebugData = {};
 
-        // this perlin noise library only supports 65536 different seeds
-        random = seedrandom('' + seed);
-        noise = new OpenSimplexNoise(random());
+        noise = new SimplexNoise('' + seed);
 
         const priorityQ = [];
         // setup first segments in queue
