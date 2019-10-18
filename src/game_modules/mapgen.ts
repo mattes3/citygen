@@ -22,7 +22,6 @@ import { defaultFor, minDegreeDifference } from '../generic_modules/utility';
 import config from './config';
 import SimplexNoise from 'simplex-noise';
 
-var random: () => number = Math.random;
 var noise: SimplexNoise;
 
 const heatmap = {
