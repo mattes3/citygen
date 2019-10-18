@@ -340,7 +340,7 @@ export class GameCanvas extends React.Component {
             const rendererWidth = canvasContainer.offsetWidth * window.devicePixelRatio;
             const rendererHeight = canvasContainer.offsetHeight * window.devicePixelRatio;
 
-            pixiRenderer = PIXI.autoDetectRenderer(rendererWidth, rendererHeight, { transparent: false, antialias: true });
+            pixiRenderer = PIXI.autoDetectRenderer(rendererWidth, rendererHeight, { view: canvasEl, transparent: false, antialias: true });
             canvasContainer.appendChild(pixiRenderer.view);
 
             zoomContainer.x = pixiRenderer.width / 2;
