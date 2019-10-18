@@ -26,18 +26,16 @@ import OpenSimplexNoise from 'open-simplex-noise';
 var random: () => number = Math.random;
 var noise: OpenSimplexNoise;
 
-function heatmap() {
-    return {
-        popOnRoad(r: Road) {
-            return (this.populationAt(r.start.x, r.start.y) + this.populationAt(r.end.x, r.end.y)) / 2;
-        },
-        populationAt(x: number, y: number) {
-            const value1 = (noise.noise2D(x / 10000, y / 10000) + 1) / 2;
-            const value2 = (noise.noise2D((x / 20000) + 500, (y / 20000) + 500) + 1) / 2;
-            const value3 = (noise.noise2D((x / 20000) + 1000, (y / 20000) + 1000) + 1) / 2;
-            return Math.pow(((value1 * value2) + value3) / 2, 2);
-        }
-    };
+const heatmap = {
+    popOnRoad(r: Road) {
+        return (this.populationAt(r.start.x, r.start.y) + this.populationAt(r.end.x, r.end.y)) / 2;
+    },
+    populationAt(x: number, y: number) {
+        const value1 = (noise.noise2D(x / 10000, y / 10000) + 1) / 2;
+        const value2 = (noise.noise2D((x / 20000) + 500, (y / 20000) + 500) + 1) / 2;
+        const value3 = (noise.noise2D((x / 20000) + 1000, (y / 20000) + 1000) + 1) / 2;
+        return Math.pow(((value1 * value2) + value3) / 2, 2);
+    }
 }
 
 type MetaInfo = {
@@ -451,13 +449,13 @@ export class Segment {
                 const templateBranch = (direction: number) => template(direction, config.mapGeneration.DEFAULT_SEGMENT_LENGTH, previousSegment.q.highway ? config.mapGeneration.NORMAL_BRANCH_TIME_DELAY_FROM_HIGHWAY : 0);
 
                 const continueStraight = templateContinue(previousSegment.dir()!);
-                const straightPop = heatmap().popOnRoad(continueStraight.r);
+                const straightPop = heatmap.popOnRoad(continueStraight.r);
 
                 if (previousSegment.q.highway) {
                     let roadPop;
                     const randomStraight = templateContinue(previousSegment.dir()! + config.mapGeneration.RANDOM_STRAIGHT_ANGLE());
 
-                    const randomPop = heatmap().popOnRoad(randomStraight.r);
+                    const randomPop = heatmap.popOnRoad(randomStraight.r);
                     if (randomPop > straightPop) {
                         newBranches.push(randomStraight);
                         roadPop = randomPop;
