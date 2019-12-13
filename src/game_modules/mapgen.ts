@@ -445,12 +445,32 @@ export class Segment {
                 const continueStraight = templateContinue(previousSegment.dir()!);
                 const straightPop = heatmap.popOnRoad(continueStraight.r);
 
+                /**
+                 * In the documentation at https://www.tmwhere.com/city_generation.html, it says:
+                 * 
+                 * "Population Density:
+                 * 
+                 * Three layers of simplex noise were combined
+                 * to define the population density map. The resulting map has 
+                 * two purposes. 
+                 * 
+                 * One is to guide the forward extension of existing road segments; 
+                 * if a random deviation will reach a higher population than extending
+                 * the original segment straight ahead, the extension will match that deviation.
+                 * 
+                 * The second purpose of the population map is to determine when
+                 * normal road segments should branch off from a highway - when the
+                 * population along the highway meets a defined threshold."
+                 */
                 if (previousSegment.q.highway) {
                     let roadPop;
                     const randomStraight = templateContinue(previousSegment.dir()! + config.mapGeneration.RANDOM_STRAIGHT_ANGLE());
 
                     const randomPop = heatmap.popOnRoad(randomStraight.r);
                     if (randomPop > straightPop) {
+                        // if a random deviation will reach a higher population 
+                        // than extending the original segment straight ahead,
+                        // the extension will match that deviation.
                         newBranches.push(randomStraight);
                         roadPop = randomPop;
                     }
@@ -459,6 +479,8 @@ export class Segment {
                         roadPop = straightPop;
                     }
                     if (roadPop > config.mapGeneration.HIGHWAY_BRANCH_POPULATION_THRESHOLD) {
+                        // normal road segments should branch off from a highway
+                        // when the population along the highway meets a defined threshold
 
                         if (Math.random() < config.mapGeneration.HIGHWAY_BRANCH_PROBABILITY) {
                             const leftHighwayBranch = templateContinue((previousSegment.dir()! - 90) + config.mapGeneration.RANDOM_BRANCH_ANGLE());
