@@ -313,12 +313,16 @@ var animate = function () {
     return requestAnimationFrame(animate);
 };
 
-export class GameCanvas extends React.Component {
+interface GameCanvasProps {
+    seed: number;
+}
+
+export class GameCanvas extends React.Component<GameCanvasProps> {
 
     private canvasContainerRef: React.RefObject<HTMLDivElement>;
     private canvasElRef: React.RefObject<HTMLCanvasElement>;
 
-    constructor(props: any) {
+    constructor(props: GameCanvasProps) {
         super(props);
         this.canvasContainerRef = React.createRef();
         this.canvasElRef = React.createRef();
@@ -326,11 +330,7 @@ export class GameCanvas extends React.Component {
 
     componentDidMount() {
         MapStore.addChangeListener(this._onMapChange);
-
-        const seed = new Date().getTime();
-        console.log(`seed: ${seed.toString()}`);
-
-        MapActions.generate(seed);
+        MapActions.generate(this.props.seed);
 
         const canvasContainer = this.canvasContainerRef.current;
         const canvasEl = this.canvasElRef.current;
@@ -440,7 +440,7 @@ export class GameCanvas extends React.Component {
         for (i = 0, end = segments.length; i < end; i += 10) {
             segment = segments[i];
 
-            const newBuildings = Building.factory.aroundSegment(() => Building.factory.fromProbability(new Date().getTime()), segment, 10, 400, qTree!);
+            const newBuildings = Building.factory.aroundSegment(() => Building.factory.fromProbability(), segment, 10, 400, qTree!);
             for (building of newBuildings) {
                 qTree!.insert(building.collider.limits()!);
             }

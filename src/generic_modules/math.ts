@@ -137,8 +137,25 @@ export function atanDegrees(val: number) {
     return Math.atan(val) * 180 / Math.PI;
 }
 
+/**
+ * 
+ * This is a seedable random number generator. It works like minstd_rand() in C++ 11, 
+ * for the theory behind it, see http://www.firstpr.com.au/dsp/rand31/p1192-park.pdf
+ */ 
+const linearCongruentialGenerator = (seed: number) => () => ((2 ** 31 - 1) & (seed = Math.imul(48271, seed))) / 2 ** 31;
+
+var currentRandom = linearCongruentialGenerator(42);
+
+export function reseedRandom(seed: number): void {
+    currentRandom = linearCongruentialGenerator(seed);
+}
+
+export function seededRandom(): number {
+    return currentRandom();
+}
+
 export function randomRange(min: number, max: number) {
-    return Math.random() * (max - min) + min;
+    return seededRandom() * (max - min) + min;
 }
 
 export function multVScalar(v: Vector2, n: number) {

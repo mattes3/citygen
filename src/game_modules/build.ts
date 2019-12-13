@@ -1,8 +1,8 @@
 // author: tmwhere.com
-import { Quadtree } from '../third_party/quadtree';
 import { CollisionObject, Limit } from '../generic_modules/collision';
-import { addPoints, atanDegrees, cosDegrees, randomRange, sinDegrees, Vector2 } from '../generic_modules/math';
+import { addPoints, atanDegrees, cosDegrees, randomRange, seededRandom, sinDegrees, Vector2 } from '../generic_modules/math';
 import { defaultFor } from '../generic_modules/utility';
+import { Quadtree } from '../third_party/quadtree';
 import config from './config';
 import { Segment } from './mapgen';
 
@@ -53,15 +53,15 @@ export class Building {
     }
 
     static factory = {
-        fromProbability(time: number): Building {
-            if (Math.random() < 0.4) {
-                return this.byType(Building.Type.IMPORT, time);
+        fromProbability(): Building {
+            if (seededRandom() < 0.4) {
+                return this.byType(Building.Type.IMPORT);
             } else {
-                return this.byType(Building.Type.RESIDENTIAL, time);
+                return this.byType(Building.Type.RESIDENTIAL);
             }
         },
 
-        byType(type: string, time: number): Building {
+        byType(type: string): Building {
             let building: Building | null;
             switch (type) {
                 case Building.Type.RESIDENTIAL:
@@ -83,8 +83,8 @@ export class Building {
             const buildings: Building[] = [];
             for (let j = 0, i = j, end = count; j < end; j++ , i = j) {
                 var end1;
-                const randomAngle = Math.random() * 360;
-                const randomRadius = Math.random() * radius;
+                const randomAngle = seededRandom() * 360;
+                const randomRadius = seededRandom() * radius;
                 const buildingCenter = {
                     x: (0.5 * (segment.r.start.x + segment.r.end.x)) + (randomRadius * sinDegrees(randomAngle)),
                     y: (0.5 * (segment.r.start.y + segment.r.end.y)) + (randomRadius * cosDegrees(randomAngle))

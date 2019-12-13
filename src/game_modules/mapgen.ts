@@ -2,8 +2,8 @@
 import cloneDeep from 'lodash-es/cloneDeep';
 import each from 'lodash-es/each';
 import some from 'lodash-es/some';
+import SimplexNoise from 'simplex-noise';
 
-import { Quadtree } from '../third_party/quadtree';
 import { CollisionObject, Limit } from '../generic_modules/collision';
 import {
     angleBetween,
@@ -13,14 +13,16 @@ import {
     doLineSegmentsIntersect,
     equalV,
     length,
+    reseedRandom,
+    seededRandom,
     sign,
     sinDegrees,
     subtractPoints,
     Vector2,
 } from '../generic_modules/math';
 import { defaultFor, minDegreeDifference } from '../generic_modules/utility';
+import { Quadtree } from '../third_party/quadtree';
 import config from './config';
-import SimplexNoise from 'simplex-noise';
 
 var noise: SimplexNoise;
 
@@ -482,11 +484,11 @@ export class Segment {
                         // normal road segments should branch off from a highway
                         // when the population along the highway meets a defined threshold
 
-                        if (Math.random() < config.mapGeneration.HIGHWAY_BRANCH_PROBABILITY) {
+                        if (seededRandom() < config.mapGeneration.HIGHWAY_BRANCH_PROBABILITY) {
                             const leftHighwayBranch = templateContinue((previousSegment.dir()! - 90) + config.mapGeneration.RANDOM_BRANCH_ANGLE());
                             newBranches.push(leftHighwayBranch);
                         }
-                        else if (Math.random() < config.mapGeneration.HIGHWAY_BRANCH_PROBABILITY) {
+                        else if (seededRandom() < config.mapGeneration.HIGHWAY_BRANCH_PROBABILITY) {
                             const rightHighwayBranch = templateContinue(previousSegment.dir()! + 90 + config.mapGeneration.RANDOM_BRANCH_ANGLE());
                             newBranches.push(rightHighwayBranch);
                         }
@@ -497,11 +499,11 @@ export class Segment {
                 }
 
                 if (straightPop > config.mapGeneration.NORMAL_BRANCH_POPULATION_THRESHOLD) {
-                    if (Math.random() < config.mapGeneration.DEFAULT_BRANCH_PROBABILITY) {
+                    if (seededRandom() < config.mapGeneration.DEFAULT_BRANCH_PROBABILITY) {
                         const leftBranch = templateBranch((previousSegment.dir()! - 90) + config.mapGeneration.RANDOM_BRANCH_ANGLE());
                         newBranches.push(leftBranch);
                     }
-                    else if (Math.random() < config.mapGeneration.DEFAULT_BRANCH_PROBABILITY) {
+                    else if (seededRandom() < config.mapGeneration.DEFAULT_BRANCH_PROBABILITY) {
                         const rightBranch = templateBranch(previousSegment.dir()! + 90 + config.mapGeneration.RANDOM_BRANCH_ANGLE());
                         newBranches.push(rightBranch);
                     }
@@ -600,5 +602,6 @@ function doRoadSegmentsIntersect(r1: Road, r2: Road) {
 }
 
 export function generate(seed: number) {
+    reseedRandom(seed);
     return Segment.generate(seed);
 }

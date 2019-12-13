@@ -1,4 +1,4 @@
-import { randomRange } from '../generic_modules/math';
+import { randomRange, seededRandom } from '../generic_modules/math';
 
 // author: tmwhere.com
 
@@ -9,7 +9,7 @@ function randomAngle(limit: number) {
     // non-linear distribution
     const nonUniformNorm = Math.pow(Math.abs(limit), 3);
     let val = 0;
-    while ((val === 0) || (Math.random() < (Math.pow(Math.abs(val), 3) / nonUniformNorm))) {
+    while ((val === 0) || (seededRandom() < (Math.pow(Math.abs(val), 3) / nonUniformNorm))) {
         val = randomRange(-limit, +limit);
     }
     return val;
