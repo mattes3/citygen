@@ -24,18 +24,9 @@ import { defaultFor, minDegreeDifference } from '../generic_modules/utility';
 import { Quadtree } from '../third_party/quadtree';
 import config from './config';
 
-var noise: SimplexNoise;
-
-const heatmap = {
-    popOnRoad(r: Road) {
-        return (this.populationAt(r.start.x, r.start.y) + this.populationAt(r.end.x, r.end.y)) / 2;
-    },
-    populationAt(x: number, y: number) {
-        const value1 = (noise.noise2D(x / 10000, y / 10000) + 1) / 2;
-        const value2 = (noise.noise2D((x / 20000) + 500, (y / 20000) + 500) + 1) / 2;
-        const value3 = (noise.noise2D((x / 20000) + 1000, (y / 20000) + 1000) + 1) / 2;
-        return Math.pow(((value1 * value2) + value3) / 2, 2);
-    }
+interface PopulationMap {
+    popOnRoad(r: Road): number;
+    populationAt(x: number, y: number): number;
 }
 
 type MetaInfo = {
@@ -433,7 +424,7 @@ export class Segment {
     };
 
     static globalGoals = {
-        generate(previousSegment: Segment) {
+        generate(previousSegment: Segment, heatmap: PopulationMap) {
             const newBranches: Segment[] = [];
             if (!previousSegment.q.severed) {
 
@@ -532,10 +523,8 @@ export class Segment {
         qTree.insert(this.collider.limits()!);
     }
 
-    static generate(seed: number) {
+    static generate(seed: number, heatmap: PopulationMap) {
         const debugData: DebugData = {};
-
-        noise = new SimplexNoise('' + seed);
 
         const priorityQ = [];
         // setup first segments in queue
@@ -574,7 +563,7 @@ export class Segment {
                     minSegment.setupBranchLinks();
                 }
                 minSegment.addSegment(segments, qTree);
-                each(Segment.globalGoals.generate(minSegment), (newSegment) => {
+                each(Segment.globalGoals.generate(minSegment, heatmap), (newSegment) => {
                     newSegment.t = minSegment.t + 1 + newSegment.t;
                     priorityQ.push(newSegment);
                 });
@@ -603,5 +592,20 @@ function doRoadSegmentsIntersect(r1: Road, r2: Road) {
 
 export function generate(seed: number) {
     reseedRandom(seed);
-    return Segment.generate(seed);
+    
+    const noise = new SimplexNoise('' + seed);
+
+    const heatmap: PopulationMap = {
+        popOnRoad(r: Road) {
+            return (this.populationAt(r.start.x, r.start.y) + this.populationAt(r.end.x, r.end.y)) / 2;
+        },
+        populationAt(x: number, y: number) {
+            const value1 = (noise.noise2D(x / 10000, y / 10000) + 1) / 2;
+            const value2 = (noise.noise2D((x / 20000) + 500, (y / 20000) + 500) + 1) / 2;
+            const value3 = (noise.noise2D((x / 20000) + 1000, (y / 20000) + 1000) + 1) / 2;
+            return Math.pow(((value1 * value2) + value3) / 2, 2);
+        }
+    }
+    
+    return Segment.generate(seed, heatmap);
 }
